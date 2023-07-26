@@ -1,0 +1,14 @@
+Package: EMDE
+Type: Package
+Title: EM-Test for Feature Selection and Differential Expression Gene Analysis
+Version: 2.1
+Date: 2022-08-18
+Authors@R: c(person("Zihao", "Chen", role = c("aut", "cre"),
+                     email = "g.e.challenger@pku.edu.cn"),
+              person("Changhu", "Wang", role = "aut"),
+              person("Ruibin","Xi", role = "ths"))
+Description: This package includes the EM-test feature selection approach to the normal, poisson and negative binomial distribution. Besides, it also provides functions for using EM-test in the analysis of single-cell RNA sequencing data, such as feature selection and differential expression gene analysis.
+License: GPL (>= 3)
+Imports: Rcpp (>= 1.0.5), parallel (>= 4.0.0), edgeR (>= 3.30.3)
+LinkingTo: Rcpp, RcppEigen
+BugReports: https://pkgname.bugtracker.url

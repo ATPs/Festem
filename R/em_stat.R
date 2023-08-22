@@ -1,6 +1,6 @@
 em.stat <- function(x,alpha.ini,k0,C,labels,group.num,prior.weight = 0.05,earlystop = NA, is_ecdf = F, 
                     cut_max = 50){
-  require(nloptr)
+  # require(nloptr)
   # C_time = Sys.time()
   
   # Calculate EM statistics
@@ -91,5 +91,5 @@ em.stat <- function(x,alpha.ini,k0,C,labels,group.num,prior.weight = 0.05,earlys
   
   }
   # Calculate EM statistics
-  return(c(1-pchisq(max(M.stat),3),max(M.stat)))
+  return(c("pvalue" = 1-pchisq(max(M.stat),3),"stat" = max(M.stat)))
 }

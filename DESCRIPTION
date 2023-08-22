@@ -1,13 +1,30 @@
-Package: EMDE
+Package: Festem
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
-Date: 2021-06-24
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Title: Feature Selection and Differential Expression Gene Analysis via EM-test
+Version: 1.0.0
+Date: 2023-08-12
+Authors@R: c(person("Zihao","Chen",role = c("aut","cre"),
+            email = "g.e.challenger@pku.edu.cn",
+            comment = c(ORCID = "0000-0002-1382-0409")),
+            person("Changhu","Wang",role = "aut",
+            email = "wangch156@pku.edu.cn",
+            comment = c(ORCID = "0009-0002-8567-0961")),
+            person("Ruibin","Xi",role = c("aut","cph"),
+            email = "ruibinxi@math.pku.edu.cn",
+            comment = c(ORCID = "0000-0001-7545-7361")))
+Description: Directly selecting differentially expressed genes for single-cell clustering analyses via EM-test. "Festem" also provides EM-test to test whether the number of component in mixtures of normal, Poisson or negative binomial distributions are larger than one. See Chen, Wang, et al (2023) <https://doi.org/10.1101/2023.07.26.550670> and Wang, Chen and Xi (2023) <https://doi.org/10.48550/arXiv.2306.12671> for more details.
 License: GPL (>= 3)
-Imports: Rcpp (>= 1.0.5)
+Depends: R(>= 2.10), Rcpp (>= 1.0.5)
+Imports: 
+    RcppEigen (>= 0.3.3),
+    nloptr (>= 2.0.3),
+    stats,
+    parallel (>= 4.2.2),
+    Seurat (>= 4.3.0),
+    ScottKnott,
+    edgeR (>= 3.40.0)
 LinkingTo: Rcpp, RcppEigen
 NeedsCompilation: yes
-Packaged: 2022-06-24 04:07:51 UTC; huge
+RoxygenNote: 7.2.3
+Encoding: UTF-8
+LazyData: true

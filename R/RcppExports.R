@@ -2,18 +2,18 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 FSEM <- function(group_num, prior_wight, C, w_reduce, w0_reduce, x_reduce, x_reduce_int, reduce_num, theta_old, k_step = 30L, newtown_step = 50L, cut_max = 50L) {
-    .Call('_EMDE_FSEM', PACKAGE = 'EMDE', group_num, prior_wight, C, w_reduce, w0_reduce, x_reduce, x_reduce_int, reduce_num, theta_old, k_step, newtown_step, cut_max)
+    .Call('_Festem_FSEM', PACKAGE = 'Festem', group_num, prior_wight, C, w_reduce, w0_reduce, x_reduce, x_reduce_int, reduce_num, theta_old, k_step, newtown_step, cut_max)
 }
 
 compute_pl <- function(theta, x, reduce_num, alpha, group_num, C) {
-    .Call('_EMDE_compute_pl', PACKAGE = 'EMDE', theta, x, reduce_num, alpha, group_num, C)
+    .Call('_Festem_compute_pl', PACKAGE = 'Festem', theta, x, reduce_num, alpha, group_num, C)
 }
 
 homo_opt <- function(w_reduce, x_reduce, reduce_num, newtown_step = 50L, th = 1e-10, r = 5) {
-    .Call('_EMDE_homo_opt', PACKAGE = 'EMDE', w_reduce, x_reduce, reduce_num, newtown_step, th, r)
+    .Call('_Festem_homo_opt', PACKAGE = 'Festem', w_reduce, x_reduce, reduce_num, newtown_step, th, r)
 }
 
 reduce_w <- function(w, reduce_num) {
-    .Call('_EMDE_reduce_w', PACKAGE = 'EMDE', w, reduce_num)
+    .Call('_Festem_reduce_w', PACKAGE = 'Festem', w, reduce_num)
 }
 

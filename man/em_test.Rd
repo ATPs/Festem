@@ -68,6 +68,7 @@ x <- rnbinom(100,mu = 2,size = 1)
 y <- c(rnbinom(50,mu = 8,size = 1),rnbinom(50,mu = 2,size = 1))
 # EM-test
 em_test(x,2)
+em_test(x,3)
 em_test(y,2)
 em_test(y,3)
 }

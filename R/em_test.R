@@ -21,6 +21,7 @@
 #' y <- c(rnbinom(50,mu = 8,size = 1),rnbinom(50,mu = 2,size = 1))
 #' # EM-test
 #' em_test(x,2)
+#' em_test(x,3)
 #' em_test(y,2)
 #' em_test(y,3)
 #' @details
@@ -95,20 +96,25 @@ em_test <- function(x,G,dist = "NB",alpha.init = NULL,K = 100,C = 1e-3,
   labels <- factor(labels)
   levels(labels) <- 1:nlevels(labels)
   
+  if (use_prior == F){
+    labels <- factor(sample(1:G,length(x),replace = T))
+  }
+  # Check if prior labels have the same number of clusters as G
+  if (use_prior == T & G != nlevels(labels)){
+    stop("Classes of labels should be the same as G.")
+  }
+  
   if (dist == "NB"){
-    if (use_prior == F){
-      labels <- factor(sample(1:G,length(x),replace = T))
-    }
-    # Check if prior labels have the same number of clusters as G
-    if (use_prior == T & G != nlevels(labels)){
-      stop("Classes of labels should be the same as G.")
-    }
-    
     em.stat(x,alpha.init,k0 = K,C = C,labels = labels,group.num = G,
             prior.weight = prior.weight,earlystop = earlystop, is_ecdf = use_ecdf, 
             cut_max = cut_max)
-  } else if (dist == "norm"){
-    stop("Not implemented yet!")
+  } else if (dist == "normal"){
+    if (use_ecdf){
+      stop("Not implemented yet!")
+    } else{
+      em.stat.normal(x,alpha.init,k0 = K,C = C,labels = labels,group.num = G,
+                     prior.weight = prior.weight,earlystop = earlystop, is_ecdf = use_ecdf)
+    }
   } else if (dist == "Poisson"){
     stop("Not implemented yet!")
   } else{

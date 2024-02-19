@@ -23,6 +23,7 @@ RunFestem(object, G, ...)
   seed = 321,
   num.threads = 1,
   FDR_level = 0.05,
+  block_size = 40000,
   prior_parameters = list(HVG_num = 2000, PC_dims = 50),
   ...
 )
@@ -38,6 +39,7 @@ RunFestem(object, G, ...)
   outlier_cutoff = 0.9,
   min.percent = 0.01,
   min.cell.num = 30,
+  block_size = 40000,
   seed = 321,
   num.threads = 1,
   FDR_level = 0.05,
@@ -55,6 +57,7 @@ RunFestem(object, G, ...)
   outlier_cutoff = 0.9,
   min.percent = 0.01,
   min.cell.num = 30,
+  block_size = 40000,
   seed = 321,
   num.threads = 1,
   FDR_level = 0.05,
@@ -110,6 +113,8 @@ in at most \code{min(n*min.percent,min.cell.num)} cells, where \code{n} is the t
 
 \item{FDR_level}{Numerical, nomical FDR level to determine number of selected features (i.e. differential expression genes).}
 
+\item{block_size}{Integer, number of genes processed at a time when removing outliers. If parApply returns an out-of-memory error, try use a smaller block size.}
+
 \item{prior_parameters}{A list containing parameters to do pre-clustering with HVG. \code{HVG_num} specified
 number of HVG to use and \code{PC_dims} is the number of PC dimensions to use.}
 }
@@ -140,6 +145,11 @@ For details of Festem, see Chen, Wang, et al (2023).
 data("example_data")
 example_data <- Seurat::CreateSeuratObject(example_data$counts,meta.data = example_data$metadata)
 example_data <- RunFestem(example_data,2,prior = "labels")
+Seurat::VariableFeatures(example_data)[1:10]
+# Use smaller block size for memory issue
+data("example_data")
+example_data <- Seurat::CreateSeuratObject(example_data$counts,meta.data = example_data$metadata)
+example_data <- RunFestem(example_data,2,prior = "labels",block_size = 50)
 Seurat::VariableFeatures(example_data)[1:10]
 }
 \references{

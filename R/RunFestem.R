@@ -3,7 +3,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
                             prior.weight = 0.05, prior.weight.filter = 0.9,
                             earlystop = 1e-4, outlier_cutoff = 0.90,
                             min.percent = 0.01,min.cell.num = 30,
-                            seed = 321,num.threads = 2){
+                            seed = 321,num.threads = 2,block_size = 40000){
   print("Running Festem ...")
   set.seed(seed)
   cluster.labels <- factor(cluster.labels)
@@ -25,13 +25,45 @@ FestemCore <- function(counts,cluster.labels, batch.id,
     levels(cluster.labels.tmp) <- 1:nlevels(cluster.labels.tmp)
     
     ## Outlier
-    counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = 0.95))
+    if (block_size > nrow(counts.tmp)){
+      counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = 0.95))
+    } else{
+      block_num <-  ceiling(nrow(counts.tmp) / block_size)
+      for (block_iter in 1:block_num){
+        if (block_iter == 1){
+          counts.tmp.tmp <- parallel::parApply(cl,counts.tmp[1:block_size,],1,rm.outlier,percent = 0.95)
+        } else{
+          counts.tmp.tmp <- cbind(counts.tmp.tmp,
+                                  parallel::parApply(cl,counts.tmp[(block_size * (block_iter-1)+1):(block_size * block_iter),],1,rm.outlier,percent = 0.95))
+        }
+        gc(verbose = FALSE)
+      }
+      counts.tmp <- t(counts.tmp.tmp)
+      rm(counts.tmp.tmp)
+    }
+    
     rownames(counts.tmp) <- rownames(counts)
     
     ## Sub-sampling
     library.size <- edgeR::calcNormFactors(counts.tmp)
     counts.tmp <- parallel::parApply(cl,rbind(library.size,counts.tmp),2,sub.sample)
-    counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = outlier_cutoff))
+    if (block_size >= nrow(counts.tmp)){
+      counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = 0.95))
+    } else{
+      block_num <-  ceiling(nrow(counts.tmp) / block_size)
+      for (block_iter in 1:block_num){
+        if (block_iter == 1){
+          counts.tmp.tmp <- parallel::parApply(cl,counts.tmp[1:block_size,],1,rm.outlier,percent = outlier_cutoff)
+        } else{
+          counts.tmp.tmp <- cbind(counts.tmp.tmp,
+                                  parallel::parApply(cl,counts.tmp[(block_size * (block_iter-1)+1):(block_size * block_iter),],1,rm.outlier,percent = outlier_cutoff))
+        }
+        gc(verbose = FALSE)
+      }
+      counts.tmp <- t(counts.tmp.tmp)
+      rm(counts.tmp.tmp)
+    }
+    # counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = outlier_cutoff))
     rownames(counts.tmp) <- rownames(counts)
     
     # Only consider genes with non-zero expression in at least min.cell.num
@@ -134,12 +166,18 @@ FestemCore <- function(counts,cluster.labels, batch.id,
 #' Empirically, if the data is far from homogeneously distributed, the penalized log-likelihood will increase rapidly in the early stage of 
 #' iterations. Later iterations only increase the penalized likelihood marginally. Therefore, specifying an early-stopping threshold can save 
 #' some time while still guarantee the validity of p-values.
+#' @param block_size Integer, number of genes processed at a time when removing outliers. If parApply returns an out-of-memory error, try use a smaller block size.
 #' 
 #' @examples 
 #' # Load example data
 #' data("example_data")
 #' example_data <- Seurat::CreateSeuratObject(example_data$counts,meta.data = example_data$metadata)
 #' example_data <- RunFestem(example_data,2,prior = "labels")
+#' Seurat::VariableFeatures(example_data)[1:10]
+#' # Use smaller block size for memory issue
+#' data("example_data")
+#' example_data <- Seurat::CreateSeuratObject(example_data$counts,meta.data = example_data$metadata)
+#' example_data <- RunFestem(example_data,2,prior = "labels",block_size = 50)
 #' Seurat::VariableFeatures(example_data)[1:10]
 #' @details For details of Festem, see Chen, Wang, et al (2023).
 #' @seealso [em_test()]
@@ -164,7 +202,7 @@ RunFestem.Seurat <- function(object,G,prior = "HVG", batch = NULL,
                              prior.weight = 0.05, prior.weight.filter = 0.9,
                              earlystop = 1e-4, outlier_cutoff = 0.90,
                              min.percent = 0.01,min.cell.num = 30,
-                             seed = 321,num.threads = 1,FDR_level = 0.05,
+                             seed = 321,num.threads = 1,FDR_level = 0.05,block_size = 40000,
                              prior_parameters = list(HVG_num = 2000,PC_dims = 50),...){
   if (!requireNamespace('Seurat', quietly = TRUE)) {
     stop("Running Festem on a Seurat object requires Seurat")
@@ -231,7 +269,7 @@ RunFestem.Seurat <- function(object,G,prior = "HVG", batch = NULL,
                              prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,
                              earlystop = earlystop, outlier_cutoff = outlier_cutoff,
                              min.percent = min.percent,min.cell.num = min.cell.num,
-                             seed = seed,num.threads = num.threads)
+                             seed = seed,num.threads = num.threads,block_size = block_size)
   num_features <- sum(result[["stat"]]$p<FDR_level & result[["stat"]]$EM>0)
   Seurat::VariableFeatures(object) <- result[["genelist"]][1:min(num_features,6000)]
   object@assays$RNA@meta.features[result[["stat"]]$names,"Festem_p"] <- result[["stat"]]$p
@@ -257,7 +295,7 @@ RunFestem.Seurat <- function(object,G,prior = "HVG", batch = NULL,
 RunFestem.matrix <- function(object,G,prior = NULL, batch = NULL,
                              prior.weight = 0.05, prior.weight.filter = 0.9,
                              earlystop = 1e-4, outlier_cutoff = 0.90,
-                             min.percent = 0.01,min.cell.num = 30,
+                             min.percent = 0.01,min.cell.num = 30,block_size = 40000,
                              seed = 321,num.threads = 1,FDR_level = 0.05,...){
   if (is.null(rownames(object))){
     rownames(object) <- paste0("Gene ",1:nrow(object))
@@ -293,7 +331,7 @@ RunFestem.matrix <- function(object,G,prior = NULL, batch = NULL,
                              prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,
                              earlystop = earlystop, outlier_cutoff = outlier_cutoff,
                              min.percent = min.percent,min.cell.num = min.cell.num,
-                             seed = seed,num.threads = num.threads)
+                             seed = seed,num.threads = num.threads,block_size = block_size)
   num_features <- sum(result[["stat"]]$p<FDR_level & result[["stat"]]$EM>0)
   result[["clustering_features"]] <- result[["genelist"]][1:min(num_features,6000)]
   names(result)[2] <- "generank"
@@ -309,7 +347,7 @@ RunFestem.matrix <- function(object,G,prior = NULL, batch = NULL,
 RunFestem.Matrix <- function(object,G,prior = NULL, batch = NULL,
                              prior.weight = 0.05, prior.weight.filter = 0.9,
                              earlystop = 1e-4, outlier_cutoff = 0.90,
-                             min.percent = 0.01,min.cell.num = 30,
+                             min.percent = 0.01,min.cell.num = 30,block_size = 40000,
                              seed = 321,num.threads = 1,FDR_level = 0.05,...){
   if (is.null(rownames(object))){
     rownames(object) <- paste0("Gene ",1:nrow(object))
@@ -345,7 +383,7 @@ RunFestem.Matrix <- function(object,G,prior = NULL, batch = NULL,
                        prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,
                        earlystop = earlystop, outlier_cutoff = outlier_cutoff,
                        min.percent = min.percent,min.cell.num = min.cell.num,
-                       seed = seed,num.threads = num.threads)
+                       seed = seed,num.threads = num.threads,block_size = block_size)
   num_features <- sum(result[["stat"]]$p<FDR_level & result[["stat"]]$EM>0)
   result[["clustering_features"]] <- result[["genelist"]][1:min(num_features,6000)]
   names(result)[2] <- "generank"

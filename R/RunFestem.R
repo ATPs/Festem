@@ -79,13 +79,23 @@ FestemCore <- function(counts,cluster.labels, batch.id,
     }
     
     time.tmp <- Sys.time()
-    em.result[[B]] <- parallel::parApply(cl,counts.tmp,1,em.stat,alpha.ini=rbind(alpha.label,rep(1/nlevels(cluster.labels.tmp),length(alpha.label))),k0=100,C=1e-3,labels = cluster.labels.tmp,
-                               group.num = nlevels(cluster.labels.tmp),prior.weight=prior.weight,earlystop = earlystop)
+    if (requireNamespace("pbapply", quietly = TRUE)) {
+      em.result[[B]] <- pbapply::pbapply(counts.tmp,1,em.stat,alpha.ini=rbind(alpha.label,rep(1/nlevels(cluster.labels.tmp),length(alpha.label))),k0=100,C=1e-3,labels = cluster.labels.tmp,
+                       group.num = nlevels(cluster.labels.tmp),prior.weight=prior.weight,earlystop = earlystop, cl = cl)
+    } else {
+      em.result[[B]] <- parallel::parApply(cl,counts.tmp,1,em.stat,alpha.ini=rbind(alpha.label,rep(1/nlevels(cluster.labels.tmp),length(alpha.label))),k0=100,C=1e-3,labels = cluster.labels.tmp,
+                                           group.num = nlevels(cluster.labels.tmp),prior.weight=prior.weight,earlystop = earlystop)
+    }
     print(paste0("Batch ",B," -- ","Time cost: ",difftime(Sys.time(),time.tmp,units = "secs")))
     
     time.tmp <- Sys.time()
-    em.result.f[[B]] <- parallel::parApply(cl,counts.tmp,1,em.stat,alpha.ini=rbind(alpha.label,rep(1/nlevels(cluster.labels.tmp),length(alpha.label))),k0=100,C=1e-3,labels = cluster.labels.tmp,
-                                 group.num = nlevels(cluster.labels.tmp),prior.weight=prior.weight.filter,earlystop = earlystop)
+    if (requireNamespace("pbapply", quietly = TRUE)) {
+      em.result.f[[B]] <- pbapply::pbapply(counts.tmp,1,em.stat,alpha.ini=rbind(alpha.label,rep(1/nlevels(cluster.labels.tmp),length(alpha.label))),k0=100,C=1e-3,labels = cluster.labels.tmp,
+                       group.num = nlevels(cluster.labels.tmp),prior.weight=prior.weight.filter,earlystop = earlystop, cl = cl)
+    } else {
+      em.result.f[[B]] <- parallel::parApply(cl,counts.tmp,1,em.stat,alpha.ini=rbind(alpha.label,rep(1/nlevels(cluster.labels.tmp),length(alpha.label))),k0=100,C=1e-3,labels = cluster.labels.tmp,
+                                             group.num = nlevels(cluster.labels.tmp),prior.weight=prior.weight.filter,earlystop = earlystop)
+    }
     print(paste0("Batch ",B," -- ","Time cost: ",difftime(Sys.time(),time.tmp,units = "secs")))
     
   }

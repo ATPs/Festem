@@ -264,6 +264,7 @@ RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
     if (is.null(G)){
       object <- Seurat::FindClusters(object, resolution = prior_parameters[["resolution"]], verbose = FALSE)
       G <- nlevels(object@active.ident)
+      prior_label <- object@active.ident
     } else{
       for (k in 1:100){
         object <- Seurat::FindClusters(object, resolution = 0.01*k, verbose = FALSE)

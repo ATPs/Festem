@@ -191,7 +191,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
 #' Seurat::VariableFeatures(example_data)[1:10]
 #' @details For details of Festem, see Chen, Wang, et al (2023).
 #' @seealso [em_test()]
-#' @references Chen, Z., Wang, C., Huang, S., Shi, Y., & Xi, R. (2023). Directly selecting differentially expressed genes for single-cell clustering analyses. bioRxiv, 2023-07.
+#' @references Chen, Z., Wang, C., Huang, S., Shi, Y., & Xi, R. (2024). Directly selecting cell-type marker genes for single-cell clustering analyses. Cell Reports Methods, 4(7).
 #' @rdname RunFestem
 #' @export
 

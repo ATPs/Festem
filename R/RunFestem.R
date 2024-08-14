@@ -26,15 +26,28 @@ FestemCore <- function(counts,cluster.labels, batch.id,
     
     ## Outlier
     if (block_size > nrow(counts.tmp)){
-      counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = 0.95))
+      if (requireNamespace("pbapply", quietly = TRUE)) {
+        counts.tmp <- t(pbapply::pbapply(counts.tmp,1,rm.outlier,percent = 0.95, cl = cl))
+      } else {
+        counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = 0.95))
+      }
     } else{
       block_num <-  ceiling(nrow(counts.tmp) / block_size)
       for (block_iter in 1:block_num){
         if (block_iter == 1){
-          counts.tmp.tmp <- parallel::parApply(cl,counts.tmp[1:block_size,],1,rm.outlier,percent = 0.95)
+          if (requireNamespace("pbapply", quietly = TRUE)) {
+            counts.tmp.tmp <- pbapply::pbapply(counts.tmp[1:block_size,],1,rm.outlier,percent = 0.95, cl = cl)
+          } else {
+            counts.tmp.tmp <- parallel::parApply(cl,counts.tmp[1:block_size,],1,rm.outlier,percent = 0.95)
+          }
         } else{
-          counts.tmp.tmp <- cbind(counts.tmp.tmp,
-                                  parallel::parApply(cl,counts.tmp[(block_size * (block_iter-1)+1):(block_size * block_iter),],1,rm.outlier,percent = 0.95))
+          if (requireNamespace("pbapply", quietly = TRUE)) {
+            counts.tmp.tmp <- cbind(counts.tmp.tmp,
+                                    pbapply::pbapply(counts.tmp[(block_size * (block_iter-1)+1):(block_size * block_iter),],1,rm.outlier,percent = 0.95, cl = cl))
+          } else {
+            counts.tmp.tmp <- cbind(counts.tmp.tmp,
+                                    parallel::parApply(cl,counts.tmp[(block_size * (block_iter-1)+1):(block_size * block_iter),],1,rm.outlier,percent = 0.95))
+          }
         }
         gc(verbose = FALSE)
       }
@@ -46,17 +59,35 @@ FestemCore <- function(counts,cluster.labels, batch.id,
     
     ## Sub-sampling
     library.size <- edgeR::calcNormFactors(counts.tmp)
-    counts.tmp <- parallel::parApply(cl,rbind(library.size,counts.tmp),2,sub.sample)
+    if (requireNamespace("pbapply", quietly = TRUE)) {
+      counts.tmp <- pbapply::pbapply(rbind(library.size,counts.tmp),2,sub.sample, cl = cl)
+    } else {
+      counts.tmp <- parallel::parApply(cl,rbind(library.size,counts.tmp),2,sub.sample)
+    }
+    
     if (block_size >= nrow(counts.tmp)){
-      counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = 0.95))
+      if (requireNamespace("pbapply", quietly = TRUE)) {
+        counts.tmp <- t(pbapply::pbapply(counts.tmp,1,rm.outlier,percent = 0.95, cl = cl))
+      } else {
+        counts.tmp <- t(parallel::parApply(cl,counts.tmp,1,rm.outlier,percent = 0.95))
+      }
     } else{
       block_num <-  ceiling(nrow(counts.tmp) / block_size)
       for (block_iter in 1:block_num){
         if (block_iter == 1){
-          counts.tmp.tmp <- parallel::parApply(cl,counts.tmp[1:block_size,],1,rm.outlier,percent = outlier_cutoff)
+          if (requireNamespace("pbapply", quietly = TRUE)) {
+            counts.tmp.tmp <- pbapply::pbapply(counts.tmp[1:block_size,],1,rm.outlier,percent = outlier_cutoff, cl = cl)
+          } else {
+            counts.tmp.tmp <- parallel::parApply(cl,counts.tmp[1:block_size,],1,rm.outlier,percent = outlier_cutoff)
+          }
         } else{
-          counts.tmp.tmp <- cbind(counts.tmp.tmp,
-                                  parallel::parApply(cl,counts.tmp[(block_size * (block_iter-1)+1):(block_size * block_iter),],1,rm.outlier,percent = outlier_cutoff))
+          if (requireNamespace("pbapply", quietly = TRUE)) {
+            counts.tmp.tmp <- cbind(counts.tmp.tmp,
+                                    pbapply::pbapply(counts.tmp[(block_size * (block_iter-1)+1):(block_size * block_iter),],1,rm.outlier,percent = outlier_cutoff, cl = cl))
+          } else {
+            counts.tmp.tmp <- cbind(counts.tmp.tmp,
+                                    parallel::parApply(cl,counts.tmp[(block_size * (block_iter-1)+1):(block_size * block_iter),],1,rm.outlier,percent = outlier_cutoff))
+          }
         }
         gc(verbose = FALSE)
       }
@@ -226,7 +257,7 @@ RunFestem.Seurat <- function(object,G,prior = "HVG", batch = NULL,
                                    nfeatures = prior_parameters[["HVG_num"]] %or% 2000,
                                    verbose = FALSE)
     object <- Seurat::ScaleData(object)
-    object <- Seurat::RunPCA(object)
+    object <- Seurat::RunPCA(object,verbose = FALSE)
     object <- Seurat::FindNeighbors(object = object, dims = 1:(prior_parameters[["PC_dims"]] %or% 50))
     for (k in 1:100){
       object <- Seurat::FindClusters(object, resolution = 0.01*k, verbose = FALSE)

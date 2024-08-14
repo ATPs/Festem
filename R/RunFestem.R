@@ -179,13 +179,15 @@ FestemCore <- function(counts,cluster.labels, batch.id,
 #' genes and columns stand for cells. We recommend setting the rownames as the name of genes.
 #' If row names are not specified, numerical indices will be created to represent genes
 #' according to their order in the input matrix.
+#' @param ... other parameters
 #' @param G An integer specifying number of mixing component (roughly speaking, number of clusters) 
-#' used in EM-test. Empirically, we recommend setting it slightly larger than the expected number
+#' used in EM-test. When \code{object} is a Seurat object and \code{G} is null, \code{G} will be automatically determined
+#' by running Louvain clustering using parameters specified by \code{prior_parameters}.
+#' Empirically, we recommend setting it slightly larger than the expected number
 #' of clusters to gain more statistical power. Theoretically speaking, if \code{G} is larger than 
 #' the actual number of clusters, the test is still valid and does not lose any power; however, if it 
 #' is smaller than the actual number, the power might decrease slightly but the test is still valid 
 #' (i.e. type I error can be controlled).
-#' @param ... other parameters
 #' @param prior A string or vector specifying prior (pre-clustering label), can be "HVG" (default), "active.ident", the name of a column  
 #' in metadata storing the pre-clustering label for each cell or a vector containing labels for each cell.
 #' If "HVG", pre-clustering will be automatically performed with parameters specified by \code{prioe_parameters}.
@@ -227,7 +229,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
 #' @export
 
 
-RunFestem <- function(object,G,...){
+RunFestem <- function(object,...){
   UseMethod("RunFestem")
 }
 
@@ -239,12 +241,12 @@ RunFestem <- function(object,G,...){
 #' meta.features, with column names "p", "EM", and "Festem_rank", respectively.  For downstream Seurat analyses,
 #' use default variable features.
 #' @export
-RunFestem.Seurat <- function(object,G,prior = "HVG", batch = NULL,
+RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
                              prior.weight = 0.05, prior.weight.filter = 0.9,
                              earlystop = 1e-4, outlier_cutoff = 0.90,
                              min.percent = 0.01,min.cell.num = 30,
                              seed = 321,num.threads = 1,FDR_level = 0.05,block_size = 40000,
-                             prior_parameters = list(HVG_num = 2000,PC_dims = 50),...){
+                             prior_parameters = list(HVG_num = 8000,PC_dims = 20, resolution = 0.7),...){
   if (!requireNamespace('Seurat', quietly = TRUE)) {
     stop("Running Festem on a Seurat object requires Seurat")
   }
@@ -254,19 +256,24 @@ RunFestem.Seurat <- function(object,G,prior = "HVG", batch = NULL,
   if (prior == "HVG"){
     print("Generating priors ... ")
     object <- Seurat::FindVariableFeatures(object = object, selection.method = "vst", 
-                                   nfeatures = prior_parameters[["HVG_num"]] %or% 2000,
+                                   nfeatures = prior_parameters[["HVG_num"]] %or% 8000,
                                    verbose = FALSE)
     object <- Seurat::ScaleData(object)
     object <- Seurat::RunPCA(object,verbose = FALSE)
     object <- Seurat::FindNeighbors(object = object, dims = 1:(prior_parameters[["PC_dims"]] %or% 50))
-    for (k in 1:100){
-      object <- Seurat::FindClusters(object, resolution = 0.01*k, verbose = FALSE)
-      if (nlevels(object@active.ident)>=G){
-        if (nlevels(object@active.ident)==G){
-          prior_label <- object@active.ident
-          break
-        } else{
-          stop(paste0("Cannot generate a prior with ",G," clusters. Try setting G as ",nlevels(object@active.ident)," instead and re-run Festem."))
+    if (is.null(G)){
+      object <- Seurat::FindClusters(object, resolution = prior_parameters[["resolution"]], verbose = FALSE)
+      G <- nlevels(object@active.ident)
+    } else{
+      for (k in 1:100){
+        object <- Seurat::FindClusters(object, resolution = 0.01*k, verbose = FALSE)
+        if (nlevels(object@active.ident)>=G){
+          if (nlevels(object@active.ident)==G){
+            prior_label <- object@active.ident
+            break
+          } else{
+            stop(paste0("Cannot generate a prior with ",G," clusters. Try setting G as ",nlevels(object@active.ident)," instead and re-run Festem."))
+          }
         }
       }
     }

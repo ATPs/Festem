@@ -7,11 +7,11 @@
 \alias{RunFestem.Matrix}
 \title{Festem feature selection and differential expression gene analysis}
 \usage{
-RunFestem(object, G, ...)
+RunFestem(object, ...)
 
 \method{RunFestem}{Seurat}(
   object,
-  G,
+  G = NULL,
   prior = "HVG",
   batch = NULL,
   prior.weight = 0.05,
@@ -24,7 +24,7 @@ RunFestem(object, G, ...)
   num.threads = 1,
   FDR_level = 0.05,
   block_size = 40000,
-  prior_parameters = list(HVG_num = 2000, PC_dims = 50),
+  prior_parameters = list(HVG_num = 8000, PC_dims = 20, resolution = 0.7),
   ...
 )
 
@@ -73,14 +73,16 @@ genes and columns stand for cells. We recommend setting the rownames as the name
 If row names are not specified, numerical indices will be created to represent genes
 according to their order in the input matrix.}
 
+\item{...}{other parameters}
+
 \item{G}{An integer specifying number of mixing component (roughly speaking, number of clusters) 
-used in EM-test. Empirically, we recommend setting it slightly larger than the expected number
+used in EM-test. When \code{object} is a Seurat object and \code{G} is null, \code{G} will be automatically determined
+by running Louvain clustering using parameters specified by \code{prior_parameters}.
+Empirically, we recommend setting it slightly larger than the expected number
 of clusters to gain more statistical power. Theoretically speaking, if \code{G} is larger than 
 the actual number of clusters, the test is still valid and does not lose any power; however, if it 
 is smaller than the actual number, the power might decrease slightly but the test is still valid 
 (i.e. type I error can be controlled).}
-
-\item{...}{other parameters}
 
 \item{prior}{A string or vector specifying prior (pre-clustering label), can be "HVG" (default), "active.ident", the name of a column
 in metadata storing the pre-clustering label for each cell or a vector containing labels for each cell.
@@ -153,7 +155,7 @@ example_data <- RunFestem(example_data,2,prior = "labels",block_size = 50)
 Seurat::VariableFeatures(example_data)[1:10]
 }
 \references{
-Chen, Z., Wang, C., Huang, S., Shi, Y., & Xi, R. (2023). Directly selecting differentially expressed genes for single-cell clustering analyses. bioRxiv, 2023-07.
+Chen, Z., Wang, C., Huang, S., Shi, Y., & Xi, R. (2024). Directly selecting cell-type marker genes for single-cell clustering analyses. Cell Reports Methods, 4(7).
 }
 \seealso{
 [em_test()]

@@ -7,6 +7,7 @@
 #' @useDynLib Festem
 ## usethis namespace: start
 #' @import RcppEigen
+#' @import dplyr
 #' @importFrom nloptr nl.grad
 #' @importFrom nloptr nloptr
 #' @importFrom Rcpp evalCpp
@@ -17,5 +18,7 @@
 #' @importFrom stats quantile
 #' @importFrom stats rpois
 #' @importFrom stats var
+#' @importFrom grDevices colorRampPalette
+#' @importFrom rlang .data
 ## usethis namespace: end
 NULL

@@ -38,6 +38,7 @@ marker_allocate_core <- function(norm.data, type, sig.level = 0.05, plot_result 
 #' # Load example data
 #' data("example_data")
 #' example_data <- Seurat::CreateSeuratObject(example_data$counts,meta.data = example_data$metadata)
+#' example_data <- RunFestem(example_data,2,prior = "labels")
 #' result <- AllocateMarker(example_data,rownames(example_data)[1:10],group_by = "labels")
 #' print(result)
 #' @seealso [RunFestem()]
@@ -99,9 +100,9 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
     marker.tmp <- rownames(gene.allocation)[gene.allocation[,i] %in% c("A","B")]
     
     if (is.null(group_by)){
-      FC.tmp <- FoldChange(object,ident.1 = colnames(gene.allocation)[i],features = marker.tmp)
+      FC.tmp <- Seurat::FoldChange(object,ident.1 = colnames(gene.allocation)[i],features = marker.tmp)
     } else if (group_by %in% colnames(object@meta.data)){
-      FC.tmp <- FoldChange(object,ident.1 = colnames(gene.allocation)[i],group.by = group_by,features = marker.tmp)
+      FC.tmp <- Seurat::FoldChange(object,ident.1 = colnames(gene.allocation)[i],group.by = group_by,features = marker.tmp)
     } else{
       stop("group_by should be the name of a column in metadata.")
     }
@@ -140,11 +141,11 @@ AllocateMarker.matrix <- function(object,marker,label,num_cores = 1,
   
   if (requireNamespace("pbapply", quietly = TRUE)) {
     gene.allocation <- pbapply::pbapply(object, 1, 
-                                        marker_allocate_core, type = factor(cluster),
+                                        marker_allocate_core, type = factor(label),
                                         sig.level = FDR_level, cl = cl)
   } else {
     gene.allocation <- parallel::parApply(cl,object, 1, 
-                                          marker_allocate_core, type = factor(cluster),
+                                          marker_allocate_core, type = factor(label),
                                           sig.level = FDR_level)
   }
   parallel::stopCluster(cl)
@@ -156,7 +157,7 @@ AllocateMarker.matrix <- function(object,marker,label,num_cores = 1,
 #' @param label A vector containing labels for cells.
 #' 
 #' @export
-AllocateMarker.Marix <- function(object,marker,label,num_cores = 1,
+AllocateMarker.Matrix <- function(object,marker,label,num_cores = 1,
                                   FDR_level = 0.05,...){
   # normalized counts are needed
   cl <- parallel::makeCluster(getOption("cl.cores", num_cores))
@@ -175,11 +176,11 @@ AllocateMarker.Marix <- function(object,marker,label,num_cores = 1,
   
   if (requireNamespace("pbapply", quietly = TRUE)) {
     gene.allocation <- pbapply::pbapply(object, 1, 
-                                        marker_allocate_core, type = factor(cluster),
+                                        marker_allocate_core, type = factor(label),
                                         sig.level = FDR_level, cl = cl)
   } else {
     gene.allocation <- parallel::parApply(cl,object, 1, 
-                                          marker_allocate_core, type = factor(cluster),
+                                          marker_allocate_core, type = factor(label),
                                           sig.level = FDR_level)
   }
   parallel::stopCluster(cl)

@@ -4,7 +4,7 @@
 \alias{AllocateMarker}
 \alias{AllocateMarker.Seurat}
 \alias{AllocateMarker.matrix}
-\alias{AllocateMarker.Marix}
+\alias{AllocateMarker.Matrix}
 \title{Assigns DEGs to the clusters as their markers}
 \usage{
 AllocateMarker(object, marker, ...)
@@ -20,7 +20,7 @@ AllocateMarker(object, marker, ...)
 
 \method{AllocateMarker}{matrix}(object, marker, label, num_cores = 1, FDR_level = 0.05, ...)
 
-\method{AllocateMarker}{Marix}(object, marker, label, num_cores = 1, FDR_level = 0.05, ...)
+\method{AllocateMarker}{Matrix}(object, marker, label, num_cores = 1, FDR_level = 0.05, ...)
 }
 \arguments{
 \item{object}{A Seurat object or a matrix or dgCMatrix containing the normalized count matrix.}
@@ -49,6 +49,7 @@ use Scott-Knott test to decide in which groups they are up-regulated or down-reg
 # Load example data
 data("example_data")
 example_data <- Seurat::CreateSeuratObject(example_data$counts,meta.data = example_data$metadata)
+example_data <- RunFestem(example_data,2,prior = "labels")
 result <- AllocateMarker(example_data,rownames(example_data)[1:10],group_by = "labels")
 print(result)
 }

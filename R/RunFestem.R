@@ -321,7 +321,7 @@ RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
                              seed = seed,num.threads = num.threads,block_size = block_size)
   num_features <- sum(result[["stat"]]$p<FDR_level & result[["stat"]]$EM>0)
   Seurat::VariableFeatures(object) <- result[["genelist"]][1:min(num_features,6000)]
-  object@assays$RNA@meta.features[result[["stat"]]$names,"Festem_p"] <- result[["stat"]]$p
+  object@assays$RNA@meta.features[result[["stat"]]$names,"Festem_p_adj"] <- result[["stat"]]$p
   object@assays$RNA@meta.features[result[["stat"]]$names,"Festem_EM"] <- result[["stat"]]$EM
   object@assays$RNA@meta.features[,"Festem_rank"] <- sapply(rownames(object),function(x){
                                                             tmp <- which(x==result[["genelist"]])

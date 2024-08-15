@@ -91,6 +91,7 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
   parallel::stopCluster(cl)
   
   ### Format output
+  gene.allocation <- t(gene.allocation)
   output <- data.frame()
   gene.allocation <- gene.allocation[rowSums(gene.allocation!="A")>0,]
   for (i in 1:ncol(gene.allocation)){
@@ -104,7 +105,9 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
       stop("group_by should be the name of a column in metadata.")
     }
     
-    output.tmp <- cbind(FC.tmp,gene = marker.tmp,cluster = colnames(gene.allocation)[i])
+    output.tmp <- cbind(FC.tmp,gene = marker.tmp,
+                        p_adj = object@assays$RNA@meta.features[marker.tmp,"Festem_p_adj"],
+                        cluster = colnames(gene.allocation)[i])
     output <- rbind(output,output.tmp)
   }
   
@@ -134,11 +137,11 @@ AllocateMarker.matrix <- function(object,marker,label,num_cores = 1,
   }
   
   if (requireNamespace("pbapply", quietly = TRUE)) {
-    gene.allocation <- pbapply::pbapply(object@assays$RNA@data[marker,], 1, 
+    gene.allocation <- pbapply::pbapply(object, 1, 
                                         marker_allocate_core, type = factor(cluster),
                                         sig.level = FDR_level, cl = cl)
   } else {
-    gene.allocation <- parallel::parApply(cl,object@assays$RNA@data[marker,], 1, 
+    gene.allocation <- parallel::parApply(cl,object, 1, 
                                           marker_allocate_core, type = factor(cluster),
                                           sig.level = FDR_level)
   }
@@ -169,11 +172,11 @@ AllocateMarker.Marix <- function(object,marker,label,num_cores = 1,
   }
   
   if (requireNamespace("pbapply", quietly = TRUE)) {
-    gene.allocation <- pbapply::pbapply(object@assays$RNA@data[marker,], 1, 
+    gene.allocation <- pbapply::pbapply(object, 1, 
                                         marker_allocate_core, type = factor(cluster),
                                         sig.level = FDR_level, cl = cl)
   } else {
-    gene.allocation <- parallel::parApply(cl,object@assays$RNA@data[marker,], 1, 
+    gene.allocation <- parallel::parApply(cl,object, 1, 
                                           marker_allocate_core, type = factor(cluster),
                                           sig.level = FDR_level)
   }

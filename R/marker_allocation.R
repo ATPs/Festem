@@ -110,7 +110,7 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
                         p_adj = object@assays$RNA@meta.features[marker.tmp,"Festem_p_adj"],
                         cluster = colnames(gene.allocation)[i])
     output <- rbind(output,output.tmp)
-    output <- output[order(abs(output$avg_log2FC),decreasing = T),]
+    output <- output[order(output$avg_log2FC,decreasing = T),]
   }
   
   return(output)

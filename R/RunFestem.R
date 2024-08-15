@@ -246,7 +246,7 @@ RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
                              earlystop = 1e-4, outlier_cutoff = 0.90,
                              min.percent = 0.01,min.cell.num = 30,
                              seed = 321,num.threads = 1,FDR_level = 0.05,block_size = 40000,
-                             prior_parameters = list(HVG_num = 8000,PC_dims = 20, resolution = 0.7),...){
+                             prior_parameters = list(HVG_num = 2000,PC_dims = 50, resolution = 0.7),...){
   if (!requireNamespace('Seurat', quietly = TRUE)) {
     stop("Running Festem on a Seurat object requires Seurat")
   }

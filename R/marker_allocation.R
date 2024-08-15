@@ -89,7 +89,26 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
                                           sig.level = FDR_level)
   }
   parallel::stopCluster(cl)
-  return(t(gene.allocation))
+  
+  ### Format output
+  output <- data.frame()
+  gene.allocation <- gene.allocation[rowSums(gene.allocation!="A")>0,]
+  for (i in 1:ncol(gene.allocation)){
+    marker.tmp <- rownames(gene.allocation)[gene.allocation[,i] %in% c("A","B")]
+    
+    if (is.null(group_by)){
+      FC.tmp <- FoldChange(object,ident.1 = colnames(gene.allocation)[i],features = marker.tmp)
+    } else if (group_by %in% colnames(object@meta.data)){
+      FC.tmp <- FoldChange(object,ident.1 = colnames(gene.allocation)[i],group.by = group_by,features = marker.tmp)
+    } else{
+      stop("group_by should be the name of a column in metadata.")
+    }
+    
+    output.tmp <- cbind(FC.tmp,gene = marker.tmp,cluster = colnames(gene.allocation)[i])
+    output <- rbind(output,output.tmp)
+  }
+  
+  return(output)
 }
 
 #' @rdname AllocateMarker

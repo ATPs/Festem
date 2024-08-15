@@ -6,7 +6,7 @@ marker_allocate_core <- function(norm.data, type, sig.level = 0.05, plot_result 
   # type is a factor denoting which cell belongs to which type
   # "A" means the highest level
   lm.data <- lm(norm.data~0+type)
-  SK.result <- ScottKnott::SK(lm.data,which = "type",sig.level = sig.level)
+  suppressWarnings(SK.result <- ScottKnott::SK(lm.data,which = "type",sig.level = sig.level))
   if (plot_result){
     plot(SK.result,dispersion = dispersion)
   }
@@ -91,6 +91,7 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
   parallel::stopCluster(cl)
   
   ### Format output
+  print("Formatting output ...")
   gene.allocation <- t(gene.allocation)
   output <- data.frame()
   gene.allocation <- gene.allocation[rowSums(gene.allocation!="A")>0,]
@@ -109,6 +110,7 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
                         p_adj = object@assays$RNA@meta.features[marker.tmp,"Festem_p_adj"],
                         cluster = colnames(gene.allocation)[i])
     output <- rbind(output,output.tmp)
+    output <- output[order(abs(output$avg_log2FC),decreasing = T),]
   }
   
   return(output)

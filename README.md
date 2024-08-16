@@ -13,7 +13,7 @@ Latest](https://img.shields.io/github/commits-since/Edward-Z-Chen/Festem/latest/
 
 Festem is a statistical method for the direct selection of cell-type markers for downstream clustering. Festem distinguishes marker genes with heterogeneous distribution across cells that are cluster informative. 
 
-<img src="https://github.com/Edward-Z-Chen/Festem/img/graphical_abstract.jpg?raw=true">
+<img src="https://github.com/Edward-Z-Chen/Festem/img/graphical_abstract.png?raw=true">
 
 For analysis codes for paper "Directly selecting differentially expressed genes for single-cell clustering analyses", see https://github.com/XiDsLab/Festem_paper.
 

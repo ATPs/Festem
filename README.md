@@ -4,13 +4,12 @@
 
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-![DOI](https://img.shields.io/badge/10.1016%2Fj.crmeth.2024.100810)
 ![Last
 Commit](https://badgen.net/github/last-commit/Edward-Z-Chen/Festem/main)
 ![Commits Since
 Latest](https://img.shields.io/github/commits-since/Edward-Z-Chen/Festem/latest/main)
 ![GitHub Downloads](https://img.shields.io/github/downloads/Edward-Z-Chen/Festem/total)
-[![R-CMD-check](https://github.com/Edward-Z-Chen/Festem/actions/workflows/main_check.yaml/badge.svg?branch=main)](https://github.com/Edward-Z-Chen/Festem/actions/workflows/main_check.yaml)
+[![R-CMD-check](https://github.com/Edward-Z-Chen/Festem/actions/workflows/main_check.yml/badge.svg?branch=main)](https://github.com/Edward-Z-Chen/Festem/actions/workflows/main_check.yml)
 <!-- badges: end -->
 
 Festem is a statistical method for the direct selection of cell-type markers for downstream clustering. Festem distinguishes marker genes with heterogeneous distribution across cells that are cluster informative. 

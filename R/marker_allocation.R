@@ -92,7 +92,7 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
   parallel::stopCluster(cl)
   
   ### Format output
-  print("Formatting output ...")
+  message("Formatting output ...")
   gene.allocation <- t(gene.allocation)
   output <- data.frame()
   gene.allocation <- gene.allocation[rowSums(gene.allocation!="A")>0,]

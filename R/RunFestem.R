@@ -4,7 +4,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
                             earlystop = 1e-4, outlier_cutoff = 0.90,
                             min.percent = 0.01,min.cell.num = 30,
                             seed = 321,num.threads = 2,block_size = 40000){
-  print("Running Festem ...")
+  message("Running Festem ...")
   set.seed(seed)
   cluster.labels <- factor(cluster.labels)
   levels(cluster.labels) <- 1:nlevels(cluster.labels)
@@ -117,7 +117,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
       em.result[[B]] <- parallel::parApply(cl,counts.tmp,1,em.stat,alpha.ini=rbind(alpha.label,rep(1/nlevels(cluster.labels.tmp),length(alpha.label))),k0=100,C=1e-3,labels = cluster.labels.tmp,
                                            group.num = nlevels(cluster.labels.tmp),prior.weight=prior.weight,earlystop = earlystop)
     }
-    print(paste0("Batch ",B," -- ","Time cost: ",difftime(Sys.time(),time.tmp,units = "secs")))
+    message(paste0("Batch ",B," -- ","Time cost: ",difftime(Sys.time(),time.tmp,units = "secs")))
     
     time.tmp <- Sys.time()
     if (requireNamespace("pbapply", quietly = TRUE)) {
@@ -127,7 +127,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
       em.result.f[[B]] <- parallel::parApply(cl,counts.tmp,1,em.stat,alpha.ini=rbind(alpha.label,rep(1/nlevels(cluster.labels.tmp),length(alpha.label))),k0=100,C=1e-3,labels = cluster.labels.tmp,
                                              group.num = nlevels(cluster.labels.tmp),prior.weight=prior.weight.filter,earlystop = earlystop)
     }
-    print(paste0("Batch ",B," -- ","Time cost: ",difftime(Sys.time(),time.tmp,units = "secs")))
+    message(paste0("Batch ",B," -- ","Time cost: ",difftime(Sys.time(),time.tmp,units = "secs")))
     
   }
   
@@ -254,7 +254,7 @@ RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
   # batch: NULL, column name of meta.data, vector
   # Otherwise, prior will be generated with top 2000 HVGs and all cells will be taken as one single batch.
   if (prior == "HVG"){
-    print("Generating priors ... ")
+    message("Generating priors ... ")
     object <- Seurat::FindVariableFeatures(object = object, selection.method = "vst", 
                                    nfeatures = prior_parameters[["HVG_num"]] %or% 8000,
                                    verbose = FALSE)

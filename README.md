@@ -8,6 +8,7 @@ v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/li
 Commit](https://badgen.net/github/last-commit/Edward-Z-Chen/Festem/main)
 ![Commits Since
 Latest](https://img.shields.io/github/commits-since/Edward-Z-Chen/Festem/latest/main)
+![GitHub Downloads](https://img.shields.io/github/downloads/Edward-Z-Chen/Festem/total)
 [![R-CMD-check](https://github.com/Edward-Z-Chen/Festem/actions/workflows/main_check.yaml/badge.svg?branch=main)](https://github.com/Edward-Z-Chen/Festem/actions/workflows/main_check.yaml)
 <!-- badges: end -->
 
@@ -31,4 +32,5 @@ For detailed usage of Festem, please refer to our protocol at XXX.
 
 ## Citations
 
-Chen, Z., Wang, C., Huang, S., Shi, Y., & Xi, R. (2024). Directly selecting cell-type marker genes for single-cell clustering analyses. Cell Reports Methods, 4(7). <https://doi.org/10.1016/j.crmeth.2024.100810>
+- Chen, Z., Wang, C., Huang, S., Shi, Y., & Xi, R. (2024). Directly selecting cell-type marker genes for single-cell clustering analyses. Cell Reports Methods, 4(7). <https://doi.org/10.1016/j.crmeth.2024.100810>
+- Wang, C., Chen, Z., & Xi, R. (2023). Feature screening for clustering analysis. arXiv preprint arXiv:2306.12671. <https://arxiv.org/abs/2306.12671>

@@ -4,6 +4,7 @@
 
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+https://img.shields.io/badge/DOI-10.1016%2Fj.crmeth.2024.100810
 ![Last
 Commit](https://badgen.net/github/last-commit/Edward-Z-Chen/Festem/main)
 ![Commits Since

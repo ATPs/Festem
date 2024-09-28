@@ -54,13 +54,15 @@ AllocateMarker <- function(object,marker,...){
 #' 
 #' @param group_by A character string or \code{NULL} (default). If \code{NULL}, \code{active.ident} is used
 #' If a string, then the corresponding column in \code{meta.data} is taken as labels for cells.
+#' @param assay Name of Assay used
 #' 
 #' @export
-AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
+AllocateMarker.Seurat <- function(object,marker,group_by = NULL,assay = "RNA", num_cores = 1,
                                   FDR_level = 0.05,...){
   if (!requireNamespace('Seurat', quietly = TRUE)) {
     stop("Running Festem on a Seurat object requires Seurat")
   }
+  object@active.assay <- assay
   cl <- parallel::makeCluster(getOption("cl.cores", num_cores))
   object <- Seurat::NormalizeData(object)
   if (is.null(group_by)){
@@ -80,12 +82,13 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
     }
   }
   
+  data_use <- SeuratObject::LayerData(object,assay = assay,layer = "data",features = marker)
   if (requireNamespace("pbapply", quietly = TRUE)) {
-    gene.allocation <- pbapply::pbapply(object@assays$RNA@data[marker,], 1, 
+    gene.allocation <- pbapply::pbapply(data_use, 1, 
                                           marker_allocate_core, type = factor(cluster),
                                           sig.level = FDR_level, cl = cl)
   } else {
-    gene.allocation <- parallel::parApply(cl,object@assays$RNA@data[marker,], 1, 
+    gene.allocation <- parallel::parApply(cl,data_use, 1, 
                                           marker_allocate_core, type = factor(cluster),
                                           sig.level = FDR_level)
   }
@@ -108,7 +111,7 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,num_cores = 1,
     }
     
     output.tmp <- cbind(FC.tmp,gene = marker.tmp,
-                        p_adj = object@assays$RNA@meta.features[marker.tmp,"Festem_p_adj"],
+                        p_adj = object[[assay]][[]][marker.tmp,"Festem_p_adj"],
                         cluster = colnames(gene.allocation)[i])
     output <- rbind(output,output.tmp)
     output <- output[order(output$avg_log2FC,decreasing = T),]

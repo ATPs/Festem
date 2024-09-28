@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^NAMESPACE_old$
 ^\./data/example_data_old\.rda$
+img/*

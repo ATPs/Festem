@@ -15,6 +15,7 @@ MarkerHeatmap(object, features, plot_cell_prop = 0.1, color_bar_max = 5, ...)
   plot_cell_prop = 0.1,
   color_bar_max = 5,
   group_by = NULL,
+  assay = "RNA",
   ...
 )
 
@@ -56,6 +57,8 @@ cell number is larger than 500.}
 
 \item{group_by}{A character string or \code{NULL} (default). If \code{NULL}, \code{active.ident} is used
 If a string, then the corresponding column in \code{meta.data} is taken as labels for cells.}
+
+\item{assay}{Name of Assay used}
 
 \item{label}{A vector containing labels for cells.}
 }

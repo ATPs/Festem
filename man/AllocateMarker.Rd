@@ -13,6 +13,7 @@ AllocateMarker(object, marker, ...)
   object,
   marker,
   group_by = NULL,
+  assay = "RNA",
   num_cores = 1,
   FDR_level = 0.05,
   ...
@@ -31,6 +32,8 @@ AllocateMarker(object, marker, ...)
 
 \item{group_by}{A character string or \code{NULL} (default). If \code{NULL}, \code{active.ident} is used
 If a string, then the corresponding column in \code{meta.data} is taken as labels for cells.}
+
+\item{assay}{Name of Assay used}
 
 \item{num_cores}{Integer, number of CPU cores to use (default = 1).}
 

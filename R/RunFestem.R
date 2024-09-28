@@ -235,20 +235,22 @@ RunFestem <- function(object,...){
 #' @rdname RunFestem
 #' @param prior_parameters A list containing parameters to do pre-clustering with HVG. \code{HVG_num} specified
 #' number of HVG to use and \code{PC_dims} is the number of PC dimensions to use.
+#' @param assay Name of Assay used
 #' @return Seurat (version 4) object. Selected features placed into
 #' \code{var.features} object. Test statistics, p-values and ranks for genes are placed into columns of
-#' meta.features, with column names "p", "EM", and "Festem_rank", respectively.  For downstream Seurat analyses,
+#' \code{meta.data} in the slot, with column names "p", "EM", and "Festem_rank", respectively.  For downstream Seurat analyses,
 #' use default variable features.
 #' @export
 RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
                              prior.weight = 0.05, prior.weight.filter = 0.9,
                              earlystop = 1e-4, outlier_cutoff = 0.90,
                              min.percent = 0.01,min.cell.num = 30,
-                             seed = 321,num.threads = 1,FDR_level = 0.05,block_size = 40000,
+                             seed = 321,num.threads = 1,FDR_level = 0.05,block_size = 40000, assay = "RNA",
                              prior_parameters = list(HVG_num = 2000,PC_dims = 50, resolution = 0.7),...){
   if (!requireNamespace('Seurat', quietly = TRUE)) {
     stop("Running Festem on a Seurat object requires Seurat")
   }
+  object@active.assay <- assay
   # prior: "HVG", "active.ident", column name of meta.data, vector
   # batch: NULL, column name of meta.data, vector
   # Otherwise, prior will be generated with top 2000 HVGs and all cells will be taken as one single batch.
@@ -313,23 +315,30 @@ RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
     stop("Number of components must be larger than 1.")
   }
   
-  result <- FestemCore(object@assays$RNA@counts,cluster.labels = prior_label, batch.id = batch_id,
+  counts_use <- SeuratObject::LayerData(object,assay = assay,layer = "counts")
+  result <- FestemCore(counts_use,cluster.labels = prior_label, batch.id = batch_id,
                              prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,
                              earlystop = earlystop, outlier_cutoff = outlier_cutoff,
                              min.percent = min.percent,min.cell.num = min.cell.num,
                              seed = seed,num.threads = num.threads,block_size = block_size)
   num_features <- sum(result[["stat"]]$p<FDR_level & result[["stat"]]$EM>0)
   Seurat::VariableFeatures(object) <- result[["genelist"]][1:min(num_features,6000)]
-  object@assays$RNA@meta.features[result[["stat"]]$names,"Festem_p_adj"] <- result[["stat"]]$p
-  object@assays$RNA@meta.features[result[["stat"]]$names,"Festem_EM"] <- result[["stat"]]$EM
-  object@assays$RNA@meta.features[,"Festem_rank"] <- sapply(rownames(object),function(x){
-                                                            tmp <- which(x==result[["genelist"]])
-                                                            if (length(tmp)>0){
-                                                              tmp
-                                                            } else{
-                                                              NA
-                                                            }
-                                                          })
+  
+  meta_to_add <- data.frame("Festem_p_adj" = rep(NA,nrow(object[[assay]])),
+                            "Festem_EM" = rep(NA,nrow(object[[assay]])),
+                            "Festem_rank" = rep(NA,nrow(object[[assay]])))
+  rownames(meta_to_add) <- rownames(object)
+  meta_to_add[result[["stat"]]$names,"Festem_p_adj"] <- result[["stat"]]$p
+  meta_to_add[result[["stat"]]$names,"Festem_EM"] <- result[["stat"]]$EM
+  meta_to_add[,"Festem_rank"] <- sapply(rownames(object),function(x){
+    tmp <- which(x==result[["genelist"]])
+    if (length(tmp)>0){
+      tmp
+    } else{
+      NA
+    }
+  })
+  object[[assay]] <- SeuratObject::AddMetaData(object[[assay]],meta_to_add)
                                                           
   return(object)
 }

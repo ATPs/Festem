@@ -31,14 +31,16 @@ MarkerHeatmap <- function(object,features,plot_cell_prop = 0.1,color_bar_max = 5
 #' 
 #' @param group_by A character string or \code{NULL} (default). If \code{NULL}, \code{active.ident} is used
 #' If a string, then the corresponding column in \code{meta.data} is taken as labels for cells.
+#' @param assay Name of Assay used
 #' @export
 
 MarkerHeatmap.Seurat <- function(object,features,
                                  plot_cell_prop = 0.1,color_bar_max = 5,
-                                 group_by = NULL,...){
+                                 group_by = NULL,assay = "RNA",...){
   if (!requireNamespace('Seurat', quietly = TRUE)) {
     stop("Running Festem on a Seurat object requires Seurat")
   }
+  object@active.assay <- assay
   if (is.null(group_by)){
     cluster <- object@active.ident
   } else if (group_by %in% colnames(object@meta.data)){
@@ -54,12 +56,12 @@ MarkerHeatmap.Seurat <- function(object,features,
                     cluster = cluster)
   
   if (is.null(plot_cell_prop) || ncol(object) < 500){
-    data <- object@assays$RNA@scale.data[features,]
+    data <- SeuratObject::LayerData(object,assay = assay,layer = "scale.data", features = features)
   } else{
     tmp <- tmp %>%
       group_by(.data$cluster) %>%
       sample_frac(plot_cell_prop)
-    data <- object@assays$RNA@scale.data[features,tmp$cell_id]
+    data <- SeuratObject::LayerData(object,assay = assay,layer = "scale.data", features = features, cells = tmp$cell_id)
   }
   
   anno <- data.frame(cluster = tmp$cluster)

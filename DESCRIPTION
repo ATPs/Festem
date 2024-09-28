@@ -1,7 +1,7 @@
 Package: Festem
 Type: Package
 Title: Feature Selection and Differential Expression Gene Analysis via EM-test
-Version: 1.2.0
+Version: 1.2.1
 Date: 2024-08-14
 Authors@R: c(person("Zihao","Chen",role = c("aut","cre"),
             email = "g.e.challenger@pku.edu.cn",
@@ -13,7 +13,7 @@ Authors@R: c(person("Zihao","Chen",role = c("aut","cre"),
             email = "ruibinxi@math.pku.edu.cn",
             comment = c(ORCID = "0000-0001-7545-7361")))
 Description: Directly selecting differentially expressed genes for single-cell clustering analyses via EM-test. "Festem" also provides EM-test to test whether the number of component in mixtures of normal, Poisson or negative binomial distributions are larger than one. See Chen, Wang, et al (2024) <https://doi.org/10.1016/j.crmeth.2024.100810> and Wang, Chen and Xi (2023) <https://doi.org/10.48550/arXiv.2306.12671> for more details.
-License: GPL (>= 3)
+License: GPL (>= 3) + file LICENSE
 Depends: R(>= 2.10), Rcpp (>= 1.0.5), rlang (>= 1.1.4)
 Imports: 
     RcppEigen (>= 0.3.3),
@@ -22,6 +22,7 @@ Imports:
     stats,
     parallel (>= 4.2.2),
     Seurat (>= 4.3.0),
+    SeuratObject (>= 4.1.0),
     ScottKnott,
     edgeR (>= 3.40.0),
     pheatmap (>= 1.0.12)

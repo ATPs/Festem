@@ -24,6 +24,7 @@ RunFestem(object, ...)
   num.threads = 1,
   FDR_level = 0.05,
   block_size = 40000,
+  assay = "RNA",
   prior_parameters = list(HVG_num = 2000, PC_dims = 50, resolution = 0.7),
   ...
 )
@@ -117,13 +118,15 @@ in at most \code{min(n*min.percent,min.cell.num)} cells, where \code{n} is the t
 
 \item{block_size}{Integer, number of genes processed at a time when removing outliers. If parApply returns an out-of-memory error, try use a smaller block size.}
 
+\item{assay}{Name of Assay used}
+
 \item{prior_parameters}{A list containing parameters to do pre-clustering with HVG. \code{HVG_num} specified
 number of HVG to use and \code{PC_dims} is the number of PC dimensions to use.}
 }
 \value{
 Seurat (version 4) object. Selected features placed into
 \code{var.features} object. Test statistics, p-values and ranks for genes are placed into columns of
-meta.features, with column names "p", "EM", and "Festem_rank", respectively.  For downstream Seurat analyses,
+\code{meta.data} in the slot, with column names "p", "EM", and "Festem_rank", respectively.  For downstream Seurat analyses,
 use default variable features.
 
 A list containing test results, gene ranks and selected gene list. The first element of 

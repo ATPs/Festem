@@ -10,6 +10,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
   levels(cluster.labels) <- 1:nlevels(cluster.labels)
   batch.id <- factor(batch.id)
   
+  RNGversion("4.4.0")
   cl <- parallel::makeCluster(getOption("cl.cores", num.threads))
   parallel::clusterSetRNGStream(cl, iseed = seed)
   em.result <- vector("list",nlevels(batch.id))

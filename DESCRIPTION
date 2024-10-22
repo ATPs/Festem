@@ -2,7 +2,7 @@ Package: Festem
 Type: Package
 Title: Feature Selection and Differential Expression Gene Analysis via EM-test
 Version: 1.2.1
-Date: 2024-08-14
+Date: 2024-10-22
 Authors@R: c(person("Zihao","Chen",role = c("aut","cre"),
             email = "g.e.challenger@pku.edu.cn",
             comment = c(ORCID = "0000-0002-1382-0409")),

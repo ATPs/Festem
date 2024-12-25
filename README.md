@@ -27,7 +27,7 @@ To install Festem, start R and enter:
 
 ## Usage
 
-For detailed usage of Festem, please refer to our protocol at XXX.
+For detailed usage of Festem, please refer to our protocol at [STAR Protocol](https://star-protocols.cell.com/protocols/3920).
 
 ## Citations
 

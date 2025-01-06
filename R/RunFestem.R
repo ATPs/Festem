@@ -43,11 +43,11 @@ FestemCore <- function(counts,cluster.labels, batch.id,
           }
         } else{
           if (requireNamespace("pbapply", quietly = TRUE)) {
-            index_end = min(block_size * block_iter, ncol(counts.tmp))
+            index_end = min(block_size * block_iter, nrow(counts.tmp))
             counts.tmp.tmp <- cbind(counts.tmp.tmp,
                                     pbapply::pbapply(counts.tmp[(block_size * (block_iter-1)+1):index_end,],1,rm.outlier,percent = 0.95, cl = cl))
           } else {
-            index_end = min(block_size * block_iter, ncol(counts.tmp))
+            index_end = min(block_size * block_iter, nrow(counts.tmp))
             counts.tmp.tmp <- cbind(counts.tmp.tmp,
                                     parallel::parApply(cl,counts.tmp[(block_size * (block_iter-1)+1):index_end,],1,rm.outlier,percent = 0.95))
           }
@@ -86,11 +86,11 @@ FestemCore <- function(counts,cluster.labels, batch.id,
           }
         } else{
           if (requireNamespace("pbapply", quietly = TRUE)) {
-            index_end = min(block_size * block_iter, ncol(counts.tmp))
+            index_end = min(block_size * block_iter, nrow(counts.tmp))
             counts.tmp.tmp <- cbind(counts.tmp.tmp,
                                     pbapply::pbapply(counts.tmp[(block_size * (block_iter-1)+1):index_end,],1,rm.outlier,percent = outlier_cutoff, cl = cl))
           } else {
-            index_end = min(block_size * block_iter, ncol(counts.tmp))
+            index_end = min(block_size * block_iter, nrow(counts.tmp))
             counts.tmp.tmp <- cbind(counts.tmp.tmp,
                                     parallel::parApply(cl,counts.tmp[(block_size * (block_iter-1)+1):index_end,],1,rm.outlier,percent = outlier_cutoff))
           }

@@ -289,6 +289,10 @@ RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
   } else if (length(prior) == 1){
     if (prior %in% colnames(object@meta.data)){
       prior_label <- object@meta.data[,prior]
+      if (length(unique(prior_label)) != G){
+        warning("Number of clusters in the prior do not equal to G. We take number of clusters in the prior as the number of mixing components in the EM-test. If G is the number of mixing components wanted, please use another prior with number of clusters equals to G.")
+        G <- length(unique(prior_label))
+      }
     } else{
       stop(paste0(prior," was not found in metadata"))
     }
@@ -330,6 +334,9 @@ RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
   counts_use <- counts_use[,filter_flag]
   prior_label <- prior_label[filter_flag]
   batch_id <- batch_id[filter_flag]
+  
+  print(paste0("The following batches are removed due to small sample size: ",
+               paste0(names(filter_criteria)[filter_criteria < 10],collapse = ", ")))
   
   result <- FestemCore(counts_use,cluster.labels = prior_label, batch.id = batch_id,
                              prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,
@@ -408,6 +415,9 @@ RunFestem.matrix <- function(object,G,prior = NULL, batch = NULL,
   prior_label <- prior_label[filter_flag]
   batch_id <- batch_id[filter_flag]
   
+  print(paste0("The following batches are removed due to small sample size: ",
+               paste0(names(filter_criteria)[filter_criteria < 10],collapse = ", ")))
+  
   result <- FestemCore(object,cluster.labels = prior_label, batch.id = batch_id,
                              prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,
                              earlystop = earlystop, outlier_cutoff = outlier_cutoff,
@@ -468,6 +478,9 @@ RunFestem.Matrix <- function(object,G,prior = NULL, batch = NULL,
   object <- object[,filter_flag]
   prior_label <- prior_label[filter_flag]
   batch_id <- batch_id[filter_flag]
+  
+  print(paste0("The following batches are removed due to small sample size: ",
+               paste0(names(filter_criteria)[filter_criteria < 10],collapse = ", ")))
   
   result <- FestemCore(object,cluster.labels = prior_label, batch.id = batch_id,
                        prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,

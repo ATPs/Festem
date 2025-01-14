@@ -87,7 +87,7 @@ is smaller than the actual number, the power might decrease slightly but the tes
 
 \item{prior}{A string or vector specifying prior (pre-clustering label), can be "HVG" (default), "active.ident", the name of a column
 in metadata storing the pre-clustering label for each cell or a vector containing labels for each cell.
-If "HVG", pre-clustering will be automatically performed with parameters specified by \code{prioe_parameters}.
+If "HVG", pre-clustering will be automatically performed with parameters specified by \code{prior_parameters}.
 If a vector is provided, it should have the same length as the number of cells.}
 
 \item{batch}{A string or vector specifying batches for cells, can be \code{NULL} (default), the name of a column in metadata

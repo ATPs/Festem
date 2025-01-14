@@ -26,6 +26,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
     levels(cluster.labels.tmp) <- 1:nlevels(cluster.labels.tmp)
     
     ## Outlier
+    message(paste0("Batch ",levels(batch.id)[B],": preprocessing ..."))
     if (block_size > nrow(counts.tmp)){
       if (requireNamespace("pbapply", quietly = TRUE)) {
         counts.tmp <- t(pbapply::pbapply(counts.tmp,1,rm.outlier,percent = 0.95, cl = cl))
@@ -61,7 +62,6 @@ FestemCore <- function(counts,cluster.labels, batch.id,
     rownames(counts.tmp) <- rownames(counts)
     
     ## Sub-sampling
-    message(paste0("Batch ",levels(batch.id)[B],": preprocessing ..."))
     library.size <- edgeR::calcNormFactors(counts.tmp)
     if (requireNamespace("pbapply", quietly = TRUE)) {
       counts.tmp <- pbapply::pbapply(rbind(library.size,counts.tmp),2,sub.sample, cl = cl)
@@ -194,7 +194,7 @@ FestemCore <- function(counts,cluster.labels, batch.id,
 #' (i.e. type I error can be controlled).
 #' @param prior A string or vector specifying prior (pre-clustering label), can be "HVG" (default), "active.ident", the name of a column  
 #' in metadata storing the pre-clustering label for each cell or a vector containing labels for each cell.
-#' If "HVG", pre-clustering will be automatically performed with parameters specified by \code{prioe_parameters}.
+#' If "HVG", pre-clustering will be automatically performed with parameters specified by \code{prior_parameters}.
 #' If a vector is provided, it should have the same length as the number of cells.
 #' @param batch A string or vector specifying batches for cells, can be \code{NULL} (default), the name of a column in metadata
 #' storing batch indices, or a vector containing batch indices for cells. If \code{NULL}, all cells are assumed
@@ -321,6 +321,16 @@ RunFestem.Seurat <- function(object,G = NULL,prior = "HVG", batch = NULL,
   }
   
   counts_use <- SeuratObject::LayerData(object,assay = assay,layer = "counts")
+  
+  ## Filter out batches with too few data, since we require that in each batch there are at least two clusters with more than 10 cells
+  filter_table <- table(prior_label,batch_id)
+  filter_criteria <- apply(filter_table,2,function(x){y <- sort(x,decreasing = T);y[2]})
+  batch_keep <- names(filter_criteria)[filter_criteria > 10]
+  filter_flag <- batch_id %in% batch_keep
+  counts_use <- counts_use[,filter_flag]
+  prior_label <- prior_label[filter_flag]
+  batch_id <- batch_id[filter_flag]
+  
   result <- FestemCore(counts_use,cluster.labels = prior_label, batch.id = batch_id,
                              prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,
                              earlystop = earlystop, outlier_cutoff = outlier_cutoff,
@@ -389,6 +399,15 @@ RunFestem.matrix <- function(object,G,prior = NULL, batch = NULL,
     stop("Batch must be NULL, a column name of metadata or a vector of batch indices for cells. If a vector were provided, please check whether its length is the same as the number of cells.")
   }
   
+  ## Filter out batches with too few data, since we require that in each batch there are at least two clusters with more than 10 cells
+  filter_table <- table(prior_label,batch_id)
+  filter_criteria <- apply(filter_table,2,function(x){y <- sort(x,decreasing = T);y[2]})
+  batch_keep <- names(filter_criteria)[filter_criteria > 10]
+  filter_flag <- batch_id %in% batch_keep
+  object <- object[,filter_flag]
+  prior_label <- prior_label[filter_flag]
+  batch_id <- batch_id[filter_flag]
+  
   result <- FestemCore(object,cluster.labels = prior_label, batch.id = batch_id,
                              prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,
                              earlystop = earlystop, outlier_cutoff = outlier_cutoff,
@@ -440,6 +459,15 @@ RunFestem.Matrix <- function(object,G,prior = NULL, batch = NULL,
   } else{
     stop("Batch must be NULL, a column name of metadata or a vector of batch indices for cells. If a vector were provided, please check whether its length is the same as the number of cells.")
   }
+  
+  ## Filter out batches with too few data, since we require that in each batch there are at least two clusters with more than 10 cells
+  filter_table <- table(prior_label,batch_id)
+  filter_criteria <- apply(filter_table,2,function(x){y <- sort(x,decreasing = T);y[2]})
+  batch_keep <- names(filter_criteria)[filter_criteria > 10]
+  filter_flag <- batch_id %in% batch_keep
+  object <- object[,filter_flag]
+  prior_label <- prior_label[filter_flag]
+  batch_id <- batch_id[filter_flag]
   
   result <- FestemCore(object,cluster.labels = prior_label, batch.id = batch_id,
                        prior.weight = prior.weight, prior.weight.filter = prior.weight.filter,

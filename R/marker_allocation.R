@@ -101,7 +101,9 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,assay = "RNA", n
   gene.allocation <- gene.allocation[rowSums(gene.allocation!="A")>0,]
   for (i in 1:ncol(gene.allocation)){
     marker.tmp <- rownames(gene.allocation)[gene.allocation[,i] %in% c("A","B")]
-    
+    if (length(marker.tmp) == 0){
+      next
+    }
     if (is.null(group_by)){
       FC.tmp <- Seurat::FoldChange(object,ident.1 = colnames(gene.allocation)[i],features = marker.tmp)
     } else if (group_by %in% colnames(object@meta.data)){

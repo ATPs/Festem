@@ -18,7 +18,13 @@ marker_allocate_core <- function(norm.data, type, sig.level = 0.05, plot_result 
   if (!is.null(ncol(clus))) clus <- apply(clus, 1, paste0,collapse = "")
   clus <- apply(matrix(clus,nrow = 1), 2, toupper)
   names(clus) <- clus.name
-  clus[levels(type)]
+  if (length(clus)>0){
+    clus[levels(type)]
+  } else{
+    clus <- rep("A",nlevels(type))
+    names(clus) <- levels(type)
+    clus
+  }
 }
 
 #' Assigns DEGs to the clusters as their markers

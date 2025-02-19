@@ -64,7 +64,7 @@ AllocateMarker <- function(object,marker,...){
 #' 
 #' @export
 AllocateMarker.Seurat <- function(object,marker,group_by = NULL,assay = "RNA", num_cores = 1,
-                                  FDR_level = 0.05,...){
+                                  FDR_level = 0.05,debug = T,...){
   if (!requireNamespace('Seurat', quietly = TRUE)) {
     stop("Running Festem on a Seurat object requires Seurat")
   }
@@ -89,14 +89,20 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,assay = "RNA", n
   }
   
   data_use <- SeuratObject::LayerData(object,assay = assay,layer = "data",features = marker)
-  if (requireNamespace("pbapply", quietly = TRUE)) {
-    gene.allocation <- pbapply::pbapply(data_use, 1, 
+  if (debug){
+      gene.allocation <- apply(data_use, 1, 
+                               marker_allocate_core, type = factor(cluster),
+                               sig.level = FDR_level)
+  }else{
+    if (requireNamespace("pbapply", quietly = TRUE)) {
+      gene.allocation <- pbapply::pbapply(data_use, 1, 
                                           marker_allocate_core, type = factor(cluster),
                                           sig.level = FDR_level, cl = cl)
-  } else {
-    gene.allocation <- parallel::parApply(cl,data_use, 1, 
-                                          marker_allocate_core, type = factor(cluster),
-                                          sig.level = FDR_level)
+    } else {
+      gene.allocation <- parallel::parApply(cl,data_use, 1, 
+                                            marker_allocate_core, type = factor(cluster),
+                                            sig.level = FDR_level)
+    }
   }
   parallel::stopCluster(cl)
   

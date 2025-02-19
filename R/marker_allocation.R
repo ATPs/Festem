@@ -64,7 +64,7 @@ AllocateMarker <- function(object,marker,...){
 #' 
 #' @export
 AllocateMarker.Seurat <- function(object,marker,group_by = NULL,assay = "RNA", num_cores = 1,
-                                  FDR_level = 0.05,debug = T,...){
+                                  FDR_level = 0.05,debug = F,...){
   if (!requireNamespace('Seurat', quietly = TRUE)) {
     stop("Running Festem on a Seurat object requires Seurat")
   }

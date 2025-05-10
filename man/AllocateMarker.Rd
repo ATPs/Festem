@@ -16,6 +16,7 @@ AllocateMarker(object, marker, ...)
   assay = "RNA",
   num_cores = 1,
   FDR_level = 0.05,
+  debug = F,
   ...
 )
 

@@ -37,7 +37,6 @@
 #' The hyper-parameter \eqn{C} was called the penalty parameter.
 #' 
 #' Currently, this function supports cases where \eqn{f(x;\theta)} is density of normal, Poisson or negative binomial distribution.
-#' @export
 
 em_test <- function(x,G,dist = "NB",alpha.init = NULL,K = 100,C = 1e-3,
                     labels = NULL,prior.weight = 0.05,earlystop = NA,limit_dist = "chisq", 

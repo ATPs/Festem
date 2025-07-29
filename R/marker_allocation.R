@@ -70,7 +70,12 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,assay = "RNA", n
   }
   object@active.assay <- assay
   cl <- parallel::makeCluster(getOption("cl.cores", num_cores))
-  object <- Seurat::NormalizeData(object)
+  
+  # Check if data needs normalization
+  if(!"data" %in% SeuratObject::Layers(object, assay = assay)) {
+    object <- Seurat::NormalizeData(object, assay = assay)
+  }
+  
   if (is.null(group_by)){
     cluster <- object@active.ident
   } else if (group_by %in% colnames(object@meta.data)){
@@ -88,7 +93,7 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,assay = "RNA", n
     }
   }
   
-  data_use <- SeuratObject::LayerData(object,assay = assay,layer = "data",features = marker)
+  data_use <- SeuratObject::LayerData(object, assay = assay, layer = "data", features = marker)
   if (debug){
       gene.allocation <- apply(data_use, 1, 
                                marker_allocate_core, type = factor(cluster),
@@ -124,10 +129,25 @@ AllocateMarker.Seurat <- function(object,marker,group_by = NULL,assay = "RNA", n
       stop("group_by should be the name of a column in metadata.")
     }
     
-    output.tmp <- cbind(FC.tmp,gene = marker.tmp,
-                        p_adj = object[[assay]][[]][marker.tmp,"Festem_p_adj"],
-                        cluster = colnames(gene.allocation)[i])
-    output <- rbind(output,output.tmp)
+    # Get meta.features if they exist
+    meta_features <- NULL
+    if(!is.null(object[[assay]]@meta.features)) {
+      meta_features <- object[[assay]]@meta.features[marker.tmp, , drop = FALSE]
+    }
+    
+    # Create output with or without meta.features
+    if(!is.null(meta_features) && "Festem_p_adj" %in% colnames(meta_features)) {
+      output.tmp <- cbind(FC.tmp, 
+                         gene = marker.tmp,
+                         p_adj = meta_features[,"Festem_p_adj"],
+                         cluster = colnames(gene.allocation)[i])
+    } else {
+      output.tmp <- cbind(FC.tmp,
+                         gene = marker.tmp,
+                         cluster = colnames(gene.allocation)[i])
+    }
+    
+    output <- rbind(output, output.tmp)
     output <- output[order(output$avg_log2FC,decreasing = T),]
   }
   

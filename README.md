@@ -1,17 +1,17 @@
-# Festem
+# FestemEnhanced
 
 <!-- badges: start -->
 
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Last
-Commit](https://badgen.net/github/last-commit/Edward-Z-Chen/Festem/main)
+Commit](https://badgen.net/github/last-commit/ATPs/Festem/main)
 ![Commits Since
-Latest](https://img.shields.io/github/commits-since/Edward-Z-Chen/Festem/latest/main)
-![GitHub Downloads](https://img.shields.io/github/downloads/Edward-Z-Chen/Festem/total)
+Latest](https://img.shields.io/github/commits-since/ATPs/Festem/latest/main)
+![GitHub Downloads](https://img.shields.io/github/downloads/ATPs/Festem/total)
 <!-- badges: end -->
 
-Festem is a statistical method for the direct selection of cell-type markers for downstream clustering. Festem distinguishes marker genes with heterogeneous distribution across cells that are cluster informative. 
+FestemEnhanced is an enhanced version of the [Festem package](https://github.com/XiDsLab/Festem) that adds support for normalized data analysis. This package extends the original Festem functionality by directly selecting differentially expressed genes for single-cell clustering analyses via EM-test, with added capability to work with normalized data in Seurat objects.
 
 <img src="https://github.com/Edward-Z-Chen/Festem/blob/main/img/graphical_abstract.png?raw=true">
 
@@ -19,15 +19,37 @@ For analysis codes for paper "Directly selecting differentially expressed genes 
 
 ## Installation
 
-To install Festem, start R and enter:
+To install FestemEnhanced, start R and enter:
 
     if (!require("pak", quietly = TRUE))
         install.packages("pak")
-    pak::pkg_install("XiDsLab/Festem")
+    pak::pkg_install("ATPs/Festem")
 
 ## Usage
 
-For detailed usage of Festem, please refer to our protocol at [STAR Protocol](https://doi.org/10.1016/j.xpro.2024.103514).
+For detailed usage of the original Festem functionality, please refer to our protocol at [STAR Protocol](https://doi.org/10.1016/j.xpro.2024.103514).
+
+### Working with Normalized Data
+
+For Seurat objects that only have normalized data (in the "data" layer) without raw counts, you can use the `RunFestemData` function:
+
+```r
+# Run Festem on normalized data
+seurat_obj <- RunFestemData(seurat_obj)
+```
+
+This function adapts the Festem algorithm to work with normalized data by:
+1. Using a modified EM test suitable for continuous normalized data
+2. Skipping count-specific preprocessing steps
+3. Adjusting filtering criteria for normalized values
+
+## Key Features
+
+- All original Festem functionality for raw count data
+- New support for normalized data analysis via `RunFestemData`
+- EM-test for mixture model component testing
+- Integration with Seurat objects
+- Parallel processing support
 
 ## Citations
 

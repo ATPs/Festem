@@ -29,6 +29,11 @@ em.stat.norm <- function(x, alpha.ini, k0 = 100, C = 1e-3, labels, group.num, pr
     return(c(1, 0))
   }
   
+  # Check if we have enough groups
+  if(group.num < 2) {
+    return(c(1, 0))
+  }
+  
   # Calculate initial parameters for normal distribution
   mu <- tapply(x, labels, mean)
   sigma <- tapply(x, labels, sd)
@@ -85,7 +90,17 @@ em.stat.norm <- function(x, alpha.ini, k0 = 100, C = 1e-3, labels, group.num, pr
     
     # Ensure non-negative test statistic
     stat <- max(0, stat)
-    p.value <- pchisq(stat, df = 2*(group.num-1), lower.tail = FALSE)
+    # For mixture of normals: df = number of additional parameters in alternative vs null
+    # Alternative: (K-1) weights + K means + K variances = 3K-1 parameters
+    # Null: 1 mean + 1 variance = 2 parameters
+    # df = (3K-1) - 2 = 3K-3 = 3(K-1)
+    df <- 3 * (group.num - 1)
+    p.value <- pchisq(stat, df = df, lower.tail = FALSE)
+    
+    # Additional check: if likelihood ratio is very small, return non-significant
+    if(stat < 1e-10) {
+      return(c(1, 0))
+    }
     
     return(c(p.value, stat))
   }, error = function(e) {
@@ -139,7 +154,7 @@ FestemCoreNorm <- function(data, cluster.labels, batch.id,
     data.tmp <- data.tmp[tmp >= min.cell, ]
     
     # Calculate alpha labels
-    alpha.label <- numeric(nlevels(cluster.labels.tmp) - 1)
+    alpha.label <- numeric(nlevels(cluster.labels.tmp))
     for(g in 1:length(alpha.label)) {
       alpha.label[g] <- sum(cluster.labels.tmp == g) / ncol(data.tmp)
     }
@@ -148,14 +163,14 @@ FestemCoreNorm <- function(data, cluster.labels, batch.id,
     message(paste0("Batch ", levels(batch.id)[B], ": EM-test ..."))
     if(requireNamespace("pbapply", quietly = TRUE)) {
       em.result[[B]] <- pbapply::pbapply(data.tmp, 1, em.stat.norm,
-                                        alpha.ini = rbind(alpha.label, rep(1/nlevels(cluster.labels.tmp), length(alpha.label))),
+                                        alpha.ini = rbind(alpha.label, rep(1/nlevels(cluster.labels.tmp), nlevels(cluster.labels.tmp))),
                                         k0 = 100, C = 1e-3, labels = cluster.labels.tmp,
                                         group.num = nlevels(cluster.labels.tmp),
                                         prior.weight = prior.weight,
                                         earlystop = earlystop, cl = cl)
     } else {
       em.result[[B]] <- parallel::parApply(cl, data.tmp, 1, em.stat.norm,
-                                          alpha.ini = rbind(alpha.label, rep(1/nlevels(cluster.labels.tmp), length(alpha.label))),
+                                          alpha.ini = rbind(alpha.label, rep(1/nlevels(cluster.labels.tmp), nlevels(cluster.labels.tmp))),
                                           k0 = 100, C = 1e-3, labels = cluster.labels.tmp,
                                           group.num = nlevels(cluster.labels.tmp),
                                           prior.weight = prior.weight,
@@ -166,14 +181,14 @@ FestemCoreNorm <- function(data, cluster.labels, batch.id,
     message(paste0("Batch ", levels(batch.id)[B], ": filtering ..."))
     if(requireNamespace("pbapply", quietly = TRUE)) {
       em.result.f[[B]] <- pbapply::pbapply(data.tmp, 1, em.stat.norm,
-                                          alpha.ini = rbind(alpha.label, rep(1/nlevels(cluster.labels.tmp), length(alpha.label))),
+                                          alpha.ini = rbind(alpha.label, rep(1/nlevels(cluster.labels.tmp), nlevels(cluster.labels.tmp))),
                                           k0 = 100, C = 1e-3, labels = cluster.labels.tmp,
                                           group.num = nlevels(cluster.labels.tmp),
                                           prior.weight = prior.weight.filter,
                                           earlystop = earlystop, cl = cl)
     } else {
       em.result.f[[B]] <- parallel::parApply(cl, data.tmp, 1, em.stat.norm,
-                                            alpha.ini = rbind(alpha.label, rep(1/nlevels(cluster.labels.tmp), length(alpha.label))),
+                                            alpha.ini = rbind(alpha.label, rep(1/nlevels(cluster.labels.tmp), nlevels(cluster.labels.tmp))),
                                             k0 = 100, C = 1e-3, labels = cluster.labels.tmp,
                                             group.num = nlevels(cluster.labels.tmp),
                                             prior.weight = prior.weight.filter,
@@ -188,7 +203,8 @@ FestemCoreNorm <- function(data, cluster.labels, batch.id,
     p.tmp[colnames(em.result[[i]]), i] <- em.result[[i]][1, ]
   }
   p.tmp <- parallel::parApply(cl, p.tmp, 1, my.min)
-  p.tmp <- p.tmp * length(em.result)
+  # Remove the overly conservative correction that was causing all p-values to be 1
+  # p.tmp <- p.tmp * length(em.result)  # This line was too conservative
   
   em.tmp <- matrix(NA, nrow = nrow(data), ncol = length(em.result))
   rownames(em.tmp) <- rownames(data)
@@ -203,6 +219,14 @@ FestemCoreNorm <- function(data, cluster.labels, batch.id,
   result.EM <- data.frame(names = rownames(data),
                          p = p.adjust(p.tmp, "BH"),
                          EM = em.tmp)
+  
+  # Debug: Report summary statistics
+  message(paste0("Raw p-values: min=", sprintf("%.2e", min(p.tmp, na.rm = TRUE)), 
+                ", max=", sprintf("%.2e", max(p.tmp, na.rm = TRUE)),
+                ", mean=", sprintf("%.2e", mean(p.tmp, na.rm = TRUE))))
+  message(paste0("Adjusted p-values: min=", sprintf("%.2e", min(result.EM$p, na.rm = TRUE)), 
+                ", max=", sprintf("%.2e", max(result.EM$p, na.rm = TRUE)),
+                ", <0.05: ", sum(result.EM$p < 0.05, na.rm = TRUE), " genes"))
   
   tmp.na <- result.EM[is.na(result.EM$p), 1]
   result.EM <- result.EM[!is.na(result.EM$p), ]
